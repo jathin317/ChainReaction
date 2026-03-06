@@ -1,8 +1,7 @@
 import os
-import sys
-
-rows = 5
-cols = 5
+no_of_turns = 0
+rows = 9
+cols = 6
 
 orbs_grid = [[0 for _ in range(cols)] for _ in range(rows)]
 
@@ -10,101 +9,28 @@ occupied = [['n' for _ in range(cols)] for _ in range(rows)]
 
 def check_treshold(row, col, player):
     if row in [0, rows - 1] and col in [0, cols - 1] and orbs_grid[row][col] == 2:
-        explode(row, col, 'corner', player)
+        explode(row, col, player)
     elif (row in [0, rows - 1] or col in [0, cols - 1]) and orbs_grid[row][col] == 3:
-        explode(row, col, 'edge', player)
+        explode(row, col, player)
     elif orbs_grid[row][col] == 4:
-        explode(row, col, 'middle', player)
+        explode(row, col, player)
 
 
-def explode(row, col, position, player):
+def explode(row, col, player):
     orbs_grid[row][col] = 0
     occupied[row][col] = 'n'
-    if position == 'corner':
-        if row == 0 and col == 0:
-            orbs_grid[row + 1][col] += 1
-            occupied[row + 1][col] = player
-            check_treshold(row + 1, col, player)
-            orbs_grid[row][col + 1] += 1
-            occupied[row][col + 1] = player
-            check_treshold(row, col + 1, player)
-        elif row == 0 and col == cols - 1:
-            orbs_grid[row + 1][col] += 1
-            occupied[row + 1][col] = player
-            check_treshold(row + 1, col, player)
-            orbs_grid[row][col - 1] += 1
-            occupied[row][col - 1] = player
-            check_treshold(row, col - 1, player)
-        elif row == rows - 1 and col == 0:
-            orbs_grid[row - 1][col] += 1
-            occupied[row - 1][col] = player
-            check_treshold(row - 1, col, player)
-            orbs_grid[row][col + 1] += 1
-            occupied[row][col + 1] = player
-            check_treshold(row, col + 1, player)
-        elif row == rows - 1 and col == cols - 1:
-            orbs_grid[row - 1][col] += 1
-            occupied[row - 1][col] = player
-            check_treshold(row - 1, col, player)
-            orbs_grid[row][col - 1] += 1
-            occupied[row][col - 1] = player
-            check_treshold(row, col - 1, player)
-    elif position == 'edge':
-        if row == 0:
-            orbs_grid[row][col - 1] += 1
-            occupied[row][col - 1] = player
-            check_treshold(row, col - 1, player)
-            orbs_grid[row][col + 1] += 1
-            occupied[row][col + 1] = player
-            check_treshold(row, col + 1, player)
-            orbs_grid[row + 1][col] += 1
-            occupied[row + 1][col] = player
-            check_treshold(row + 1, col, player)
-        elif row == rows - 1:
-            orbs_grid[row][col - 1] += 1
-            occupied[row][col - 1] = player
-            check_treshold(row, col - 1, player)
-            orbs_grid[row][col + 1] += 1
-            occupied[row][col + 1] = player
-            check_treshold(row, col + 1, player)
-            orbs_grid[row - 1][col] += 1
-            occupied[row - 1][col] = player
-            check_treshold(row - 1, col, player)
-        elif col == 0:
-            orbs_grid[row + 1][col] += 1
-            occupied[row + 1][col] = player
-            check_treshold(row + 1, col, player)
-            orbs_grid[row][col + 1] += 1
-            occupied[row][col + 1] = player
-            check_treshold(row, col + 1, player)
-            orbs_grid[row - 1][col] += 1
-            occupied[row - 1][col] = player
-            check_treshold(row - 1, col, player)
-        elif col == cols - 1:
-            orbs_grid[row + 1][col] += 1
-            occupied[row + 1][col] = player
-            check_treshold(row + 1, col, player)
-            orbs_grid[row][col - 1] += 1
-            occupied[row][col - 1] = player
-            check_treshold(row, col - 1, player)
-            orbs_grid[row - 1][col] += 1
-            occupied[row - 1][col] = player
-            check_treshold(row - 1, col, player)
-    else:
-        orbs_grid[row + 1][col] += 1
-        occupied[row + 1][col] = player
-        check_treshold(row + 1, col, player)
-        orbs_grid[row - 1][col] += 1
-        occupied[row - 1][col] = player
-        check_treshold(row - 1, col, player)
-        orbs_grid[row][col + 1] += 1
-        occupied[row][col + 1] = player
-        check_treshold(row, col + 1, player)
-        orbs_grid[row][col - 1] += 1
-        occupied[row][col - 1] = player
-        check_treshold(row, col - 1, player)
 
+    directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
+    for drow, dcol in directions:
+        n_row = row + drow
+        n_col = col + dcol
+
+        if 0 <= n_row < rows and 0 <= n_col < cols:
+            orbs_grid[n_row][n_col] += 1
+            occupied[n_row][n_col] = player
+            check_treshold(n_row, n_col, player)
+    
 
 def turn(player):
     while True:
@@ -132,10 +58,29 @@ def print_grid():
 
 print_grid()
 
+def isCompleted():
+    if no_of_turns <= 2:
+        return False
+    
+    p1_present = False
+    p2_present = False
+
+    for i in range(rows):
+        for j in range(cols):
+            if occupied[i][j] == 'p1':
+                p1_present = True
+            elif occupied[i][j] == 'p2':
+                p2_present = True
+    return not(p1_present and p2_present)
+
+
 current_player = 'p1'
 
 while True:
     turn(current_player)
+    no_of_turns += 1
+    if isCompleted():
+        break
     if current_player == 'p1':
         current_player = 'p2'
     else:
