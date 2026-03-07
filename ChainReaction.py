@@ -1,4 +1,8 @@
 import os
+import time
+import bot
+
+current_player = 'p1'
 no_of_turns = 0
 rows = 9
 cols = 6
@@ -8,17 +12,21 @@ orbs_grid = [[0 for _ in range(cols)] for _ in range(rows)]
 occupied = [['n' for _ in range(cols)] for _ in range(rows)]
 
 def check_treshold(row, col, player):
-    if row in [0, rows - 1] and col in [0, cols - 1] and orbs_grid[row][col] == 2:
+    if row in [0, rows - 1] and col in [0, cols - 1] and orbs_grid[row][col] >= 2:
         explode(row, col, player)
-    elif (row in [0, rows - 1] or col in [0, cols - 1]) and orbs_grid[row][col] == 3:
+    elif (row in [0, rows - 1] or col in [0, cols - 1]) and orbs_grid[row][col] >= 3:
         explode(row, col, player)
-    elif orbs_grid[row][col] == 4:
+    elif orbs_grid[row][col] >= 4:
         explode(row, col, player)
 
 
 def explode(row, col, player):
     orbs_grid[row][col] = 0
     occupied[row][col] = 'n'
+
+    os.system('clear')
+    print_grid()
+    time.sleep(0.5)
 
     directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
@@ -74,13 +82,23 @@ def isCompleted():
     return not(p1_present and p2_present)
 
 
-current_player = 'p1'
-
 while True:
-    turn(current_player)
+    if current_player == 'p1':
+        turn(current_player)
+    else:
+        b_row, b_col = bot.get_best_move(orbs_grid, occupied, 'p2')
+
+        orbs_grid[b_row][b_col] += 1
+        occupied[b_row][b_col] = 'p2'
+
+        check_treshold(b_row, b_col, 'p2')
+        os.system('clear')
+        print_grid()
     no_of_turns += 1
+
     if isCompleted():
-        break
+        print(f"Game Over! {current_player} WINS")
+
     if current_player == 'p1':
         current_player = 'p2'
     else:
