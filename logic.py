@@ -1,7 +1,3 @@
-import os
-import time
-import bot
-
 current_player = 'p1'
 no_of_turns = 0
 rows = 9
@@ -11,35 +7,39 @@ orbs_grid = [[0 for _ in range(cols)] for _ in range(rows)]
 
 occupied = [['n' for _ in range(cols)] for _ in range(rows)]
 
-def check_treshold(row, col, player):
+def check_treshold(row, col, player, animate_callback=None):
     if row in [0, rows - 1] and col in [0, cols - 1] and orbs_grid[row][col] >= 2:
-        explode(row, col, player)
+        explode(row, col, player, animate_callback)
     elif (row in [0, rows - 1] or col in [0, cols - 1]) and orbs_grid[row][col] >= 3:
-        explode(row, col, player)
+        explode(row, col, player, animate_callback)
     elif orbs_grid[row][col] >= 4:
-        explode(row, col, player)
+        explode(row, col, player, animate_callback)
 
 
-def explode(row, col, player):
+def explode(row, col, player, animate_callback):
     orbs_grid[row][col] = 0
     occupied[row][col] = 'n'
-
-    os.system('clear')
-    print_grid()
-    time.sleep(0.5)
 
     directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
     for drow, dcol in directions:
         n_row = row + drow
         n_col = col + dcol
-
         if 0 <= n_row < rows and 0 <= n_col < cols:
             orbs_grid[n_row][n_col] += 1
             occupied[n_row][n_col] = player
-            check_treshold(n_row, n_col, player)
-    
 
+    if animate_callback:
+        animate_callback()
+
+    for drow, dcol in directions:
+        n_row = row + drow
+        n_col = col + dcol
+
+        if 0 <= n_row < rows and 0 <= n_col < cols:
+            check_treshold(n_row, n_col, player, animate_callback)
+    
+"""
 def turn(player):
     while True:
         row = int(input("row: "))
@@ -63,8 +63,8 @@ def print_grid():
         for j in range(cols):
             print(f" {occupied[i][j]}:{orbs_grid[i][j]} |", end = "")
         print()
+"""
 
-print_grid()
 
 def isCompleted():
     if no_of_turns <= 2:
@@ -81,7 +81,7 @@ def isCompleted():
                 p2_present = True
     return not(p1_present and p2_present)
 
-
+"""
 while True:
     if current_player == 'p1':
         turn(current_player)
@@ -103,3 +103,5 @@ while True:
         current_player = 'p2'
     else:
         current_player = 'p1'
+
+"""

@@ -23,7 +23,9 @@ def evaluation(orbs_grid, occupied, player):
 
     return my_score - opponent_score
 
-def get_best_move(orbs_grid, occupied, player, depth = 3):
+def get_best_move(orbs_grid, occupied, player, depth = 1):
+    alpha = float('-inf')
+    beta = float('inf')
     best_score = float('-inf')
     best_move = (-1, -1)
     for i in range(rows):
@@ -38,14 +40,16 @@ def get_best_move(orbs_grid, occupied, player, depth = 3):
 
                 bot_check_treshold(new_orbs_grid, new_occupied, i, j, player)
 
-                score = min_value(new_orbs_grid, new_occupied, player, depth - 1)
+                score = min_value(new_orbs_grid, new_occupied, player, depth - 1, alpha, beta)
 
                 if score > best_score:
                     best_score = score
                     best_move = (i, j)
+
+                    alpha = max(alpha, best_score)
     return best_move
 
-def max_value(orbs_grid, occupied, player, depth):
+def max_value(orbs_grid, occupied, player, depth, alpha, beta):
     if depth == 0:
         return evaluation(orbs_grid, occupied, player)
     v = float('-inf')
@@ -60,10 +64,14 @@ def max_value(orbs_grid, occupied, player, depth):
                 new_occupied[i][j] = player
                 bot_check_treshold(new_orbs_grid, new_occupied, i, j, player)
 
-                v = max(v, min_value(new_orbs_grid, new_occupied, player, depth - 1))
+                v = max(v, min_value(new_orbs_grid, new_occupied, player, depth - 1, alpha, beta))
+
+                alpha = max(alpha, v)
+                if alpha >= beta:
+                    return v
     return v
 
-def min_value(orbs_grid, occupied, player, depth):
+def min_value(orbs_grid, occupied, player, depth, alpha, beta):
     if depth == 0:
         return evaluation(orbs_grid, occupied, player)
     v = float('inf')
@@ -80,7 +88,11 @@ def min_value(orbs_grid, occupied, player, depth):
                 new_occupied[i][j] = opponent
                 bot_check_treshold(new_orbs_grid, new_occupied, i, j, opponent)
 
-                v = min(v, max_value(new_orbs_grid, new_occupied, player, depth - 1))
+                v = min(v, max_value(new_orbs_grid, new_occupied, player, depth - 1, alpha, beta))
+
+                beta = min(beta, v)
+                if alpha >= beta:
+                    return v
     return v
 
 
