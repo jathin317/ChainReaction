@@ -20,6 +20,8 @@ function App()
   const [turnCount, setTurnCount] = useState(0);
   const [winner, setWinner] = useState(null);
 
+  const [lastMove, setLastMove] = useState({r: null, c: null});
+
   useEffect(() => {
     if (turnCount > 1 && !isAnimating)
     {
@@ -82,6 +84,8 @@ function App()
 
           const data = await response.json();
 
+          setLastMove({ r: data.bot_row, c: data.bot_col });
+
           playFrames(data.frames);
         }
         catch(error)
@@ -104,6 +108,8 @@ function App()
     {
       return;
     }
+
+    setLastMove({r, c});
 
     const payload = {
       orbs_grid: orbsGrid,
@@ -137,6 +143,7 @@ function App()
     setCurrentPlayer('p1');
     setTurnCount(0);
     setWinner(null);
+    setLastMove({r:null, c:null});
   }
 
   const renderOrbs = (count, owner) => {
@@ -184,8 +191,10 @@ function App()
             row.map((orbs, cIndex) => {
               const owner = occupied[rIndex][cIndex];
 
+              const isLastMove = lastMove.r === rIndex && lastMove.c === cIndex;
+
               return (
-                <div key={`${rIndex} - ${cIndex}`} className='cell' onClick={() => handleCellClick(rIndex, cIndex)}>
+                <div key={`${rIndex} - ${cIndex}`} className={`cell ${isLastMove ? 'highlight' : ''}`} onClick={() => handleCellClick(rIndex, cIndex)}>
                   {renderOrbs(orbs, owner)}
                 </div>
               );
