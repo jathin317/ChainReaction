@@ -1,7 +1,7 @@
 import copy
 
-rows = 9
-cols = 6
+rows = 6
+cols = 9
 
 def evaluation(orbs_grid, occupied, player):
     my_score = 0
@@ -11,11 +11,11 @@ def evaluation(orbs_grid, occupied, player):
     for i in range(rows):
         for j in range(cols):
             if (i in [0, rows - 1] and j in [0, cols - 1]):
-                weight = 5 # Corner
+                weight = 0.75 # Corner
             elif (i in [0, rows - 1] or j in [0, cols - 1]):
-                weight = 3 # Edge
+                weight = 0.5 # Edge
             else:
-                weight = 1 # Center
+                weight = 0.4 # Center
             if occupied[i][j] == player:
                 my_score += orbs_grid[i][j] * weight
             elif occupied[i][j] == opponent:

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 
 const ROWS = 6;
@@ -17,6 +17,31 @@ function App()
   const [currentPlayer, setCurrentPlayer] = useState('p1');
   const [isAnimating, setIsAnimating] = useState(false);
 
+  const [turnCount, setTurnCount] = useState(0);
+  const [winner, setWinner] = useState(null);
+
+  useEffect(() => {
+    if (turnCount > 1 && !isAnimating)
+    {
+      let p1Present = false;
+      let p2Present = false;
+
+      occupied.forEach(row => {
+        row.forEach(cell => {
+          if (cell === 'p1')
+            p1Present = true;
+          if (cell === 'p2')
+            p2Present = true;
+        });
+      });
+
+      if (!p1Present && p2Present)
+        setWinner('p2');
+      if (p1Present && !p2Present)
+        setWinner('p1');
+    }
+  }, [turnCount, occupied, isAnimating])
+
   const playFrames = (frames) => {
     setIsAnimating(true);
 
@@ -29,16 +54,52 @@ function App()
         {
           setIsAnimating(false);
           setCurrentPlayer(prev => prev === "p1" ? "p2" : "p1");
+          setTurnCount(prev => prev + 1);
         }
       }, index * 150);
     });
   };
 
+  useEffect(() => {
+    if (currentPlayer === 'p2' && !isAnimating && !winner)
+    {
+      const fetchBotMove = async () => {
+        const payload = {
+          orbs_grid: orbsGrid,
+          occupied: occupied,
+          player: 'p2',
+          row: -1,
+          col: -1
+        };
+
+        try 
+        {
+          const response = await fetch("http://127.0.0.1:8000/bot_move", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+
+          playFrames(data.frames);
+        }
+        catch(error)
+        {
+          console.error("Error fetching from bot,", error);
+        }
+
+      };
+      setTimeout(fetchBotMove, 500);
+    }
+  }, [currentPlayer, isAnimating, orbsGrid, occupied, winner]);
+
   const handleCellClick = async (r, c) => {
-    if (isAnimating)
+    if (isAnimating || currentPlayer == 'p2' || winner != null)
     {
       return;
     }
+
     if (occupied[r][c] !== 'n' && occupied[r][c] !== currentPlayer)
     {
       return;
@@ -69,6 +130,14 @@ function App()
       console.error("Error communicating with backend: ", error);
     }
   };
+
+  const resetGame = () => {
+    setOrbsGrid(createEmptyOrbs());
+    setOccupied(createEmptyOccupied());
+    setCurrentPlayer('p1');
+    setTurnCount(0);
+    setWinner(null);
+  }
 
   const renderOrbs = (count, owner) => {
     if (count === 0 || owner === 'n')
@@ -109,18 +178,31 @@ function App()
           {currentPlayer === 'p1' ? 'Red' : 'Green'}
         </span>
       </h2>
-      <div className='board'>
-        {orbsGrid.map((row, rIndex) => (
-          row.map((orbs, cIndex) => {
-            const owner = occupied[rIndex][cIndex];
+      <div className='board-wrapper'>
+        <div className='board'>
+          {orbsGrid.map((row, rIndex) => (
+            row.map((orbs, cIndex) => {
+              const owner = occupied[rIndex][cIndex];
 
-            return (
-              <div key={`${rIndex} - ${cIndex}`} className='cell' onClick={() => handleCellClick(rIndex, cIndex)}>
-                {renderOrbs(orbs, owner)}
-              </div>
-            );
-          })
-        ))}
+              return (
+                <div key={`${rIndex} - ${cIndex}`} className='cell' onClick={() => handleCellClick(rIndex, cIndex)}>
+                  {renderOrbs(orbs, owner)}
+                </div>
+              );
+            })
+          ))}
+        </div>
+
+        {winner && (
+          <div className='game-over'>
+            <h1 style={{color: winner === 'p1' ? '#ff6b6b' : '#6bff6b'}}>
+              {winner === 'p1' ? 'Red' : 'Green'} Wins!
+            </h1>
+            <button className='reset-button' onClick={resetGame}>
+              Play Again
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
