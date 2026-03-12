@@ -76,7 +76,7 @@ function App()
 
         try 
         {
-          const response = await fetch("https://chain-reaction-backend-zp6o.onrender.com/bot_move", {
+          const response = await fetch("/api/bot_move", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -121,7 +121,7 @@ function App()
 
     try
     {
-      const response = await fetch("https://chain-reaction-backend-zp6o.onrender.com/human_move", {
+      const response = await fetch("/api/human_move", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

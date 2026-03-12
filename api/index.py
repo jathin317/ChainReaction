@@ -83,12 +83,12 @@ def move(orbs_grid, occupied, start_row, start_col, player):
     return frames
 
 
-@app.post("/human_move")
+@app.post("/api/human_move")
 def human_move(state: GameState):
     animations_frames = move(state.orbs_grid, state.occupied, state.row, state.col, state.player)
     return {"frames": animations_frames}
 
-@app.post("/bot_move")
+@app.post("/api/bot_move")
 def bot_move(state: GameState):
     b_row, b_col = bot.get_best_move(state.orbs_grid, state.occupied, state.player)
 
