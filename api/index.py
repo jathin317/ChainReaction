@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 import copy
-import bot
+import _bot as bot
 
 app = FastAPI()
 
