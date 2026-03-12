@@ -3,6 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 import copy
+import sys
+import os
+
+# Force Python to look inside the /api folder for imported files
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 import _bot as bot
 
 app = FastAPI()
